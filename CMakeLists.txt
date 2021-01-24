@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 2.8)
 
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-  if(DEFINED ENV{VITASDK})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
-  else()
-    message(FATAL_ERROR "Please define VITASDK to point to your SDK path!")
-  endif()
+	if(DEFINED ENV{VITASDK})
+		set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
+	else()
+		message(FATAL_ERROR "Please define VITASDK to point to your SDK path!")
+	endif()
 endif()
 
-project(LOLIcon)
+project(lolimenu)
 include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-q -Wall -O3 -std=gnu99")
@@ -20,21 +20,21 @@ link_directories(
 )
 
 add_executable(${PROJECT_NAME}
-	LOLIcon.c
-	blit.c
-	font.c
-	utils.c
+	src/LOLIcon.c
+	src/blit.c
+	src/font.c
+	src/utils.c
 )
 
 target_link_libraries(${PROJECT_NAME}
-        k
+		k
 		SceAppMgrForDriver_stub
-        SceSysmemForDriver_stub
+		SceSysmemForDriver_stub
 		SceProcessmgrForKernel_stub
-        SceThreadmgrForDriver_stub
-        SceIofilemgrForDriver_stub
-        SceCpuForDriver_stub
-        taihenForKernel_stub
+		SceThreadmgrForDriver_stub
+		SceIofilemgrForDriver_stub
+		SceCpuForDriver_stub
+		taihenForKernel_stub
 		SceDebugForDriver_stub
 		SceDisplayForDriver_stub
 		SceModulemgrForKernel_stub
@@ -45,11 +45,12 @@ target_link_libraries(${PROJECT_NAME}
 		SceProcessmgrForDriver_stub
 		taihenModuleUtils_stub
 		SceSysconForDriver_stub
-        gcc
-        -nostdlib
+		gcc
+		-nostdlib
 )
+
 vita_create_self(${PROJECT_NAME}.skprx ${PROJECT_NAME}
-  UNSAFE
-  CONFIG ${CMAKE_SOURCE_DIR}/LOLIcon.yml
+	UNSAFE
+	CONFIG ${CMAKE_SOURCE_DIR}/exports.yml
 )
 
