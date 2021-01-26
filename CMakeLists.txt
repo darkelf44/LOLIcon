@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
 	src/blit.c
 	src/font.c
 	src/utils.c
+	src/monospace.c
 )
 
 target_link_libraries(${PROJECT_NAME}
