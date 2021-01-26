@@ -29,6 +29,8 @@ add_executable(${PROJECT_NAME}
 	src/blit.c
 	src/font.c
 	src/utils.c
+
+	src/display.c
 	src/monospace.c
 )
 
