@@ -1,5 +1,5 @@
 // include header
-#include "display.h"
+#include <common.h>
 
 // Monospace font
 extern const int16_t monospace_char_count;
@@ -11,7 +11,7 @@ extern const int16_t monospace_char_table[];
 Display display = {0};
 
 // Initialize display
-bool display_init(void)
+void display_init(void)
 {
 	// Add "monospace" font
 	display.font_list[0].char_count  = monospace_char_count;
@@ -28,7 +28,7 @@ bool display_init(void)
 }
 
 // Set the framebuffer before rendering
-bool display_set_framebuffer(const SceDisplayFrameBuf * fb)
+void display_set_framebuffer(const SceDisplayFrameBuf * fb)
 {
 	// Copy framebuffer data
 	display.framebuffer = *fb;
