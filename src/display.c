@@ -40,12 +40,13 @@ int32_t display_draw_text(const char * text, size_t n, uint32_t fgcolor, uint32_
 	const Font font = * display.font;
 	uint16_t linesize = display.framebuffer.pitch;
 	uint32_t * framebuffer = display.framebuffer.base;
-	const uint32_t fgalpha = fgcolor >> 24;
-	const uint32_t bgalpha = bgcolor >> 24;
 
 	// Variables
 	static uint32_t linebuffer[16];	// Buffer used to blit a line of pixels for the character
 	size_t k = 0;
+	bool alpha = false;
+	uint32_t fgalpha = fgcolor >> 24;
+	uint32_t bgalpha = bgcolor >> 24;
 
 	// Use -1 for null terminated strings
 	if (n == (size_t) -1)
@@ -61,6 +62,30 @@ int32_t display_draw_text(const char * text, size_t n, uint32_t fgcolor, uint32_
 	// Remove alpha from colors
 	fgcolor &= 0xFFFFFF;
 	bgcolor &= 0xFFFFFF;
+	
+	// Premultiply fgcolor
+	if (fgalpha != 0xFF)
+	{
+		uint8_t * color = (uint8_t *) &fgcolor;
+		color[0] = (color[0] * fgalpha) / 0xFF;
+		color[1] = (color[1] * fgalpha) / 0xFF;
+		color[2] = (color[2] * fgalpha) / 0xFF;
+		
+		alpha = true;
+	}
+	fgalpha = 0xFF - fgalpha;
+	
+	// Premultiply bgcolor
+	if (bgalpha != 0xFF)
+	{
+		uint8_t * color = (uint8_t *) &bgcolor;
+		color[0] = (color[0] * bgalpha) / 0xFF;
+		color[1] = (color[1] * bgalpha) / 0xFF;
+		color[2] = (color[2] * bgalpha) / 0xFF;
+
+		alpha = true;
+	}
+	bgalpha = 0xFF - bgalpha;
 
 	// Print text
 	for (; (k < n) && (display.text_x + font.char_width < display.framebuffer.width); (++ k, display.text_x += font.char_width))
@@ -85,14 +110,56 @@ int32_t display_draw_text(const char * text, size_t n, uint32_t fgcolor, uint32_
 			else
 				data = ((const uint8_t *) font.char_table)[ch * font.char_height + j];
 
-			for (i = 0; i < font.char_width; ++ i)
-				if (data & (1 << i))
-					linebuffer[i] = fgcolor;
-				else
-					linebuffer[i] = bgcolor;
+			if (alpha)
+			{
+				// Copy the line from the framebuffer
+				ksceKernelMemcpyUserToKernel(linebuffer, (uintptr_t)(framebuffer + display.text_x + (display.text_y + j) * linesize), font.char_width * sizeof(uint32_t));
+
+				// Alpha blend pixel line
+				for (i = 0; i < font.char_width; ++ i)
+				{
+					if (data & (1 << i))
+					{
+						if (fgalpha == 0)
+							linebuffer[i] = fgcolor;
+						else
+						{
+							uint8_t * pixel = (uint8_t *) &linebuffer[i];
+							const uint8_t * color = (uint8_t *) &fgcolor;
+							pixel[0] = (pixel[0] * fgalpha) / 0xFF + color[0];
+							pixel[1] = (pixel[1] * fgalpha) / 0xFF + color[1];
+							pixel[2] = (pixel[2] * fgalpha) / 0xFF + color[2];
+						}
+					}
+					else
+					{
+						if (bgalpha == 0)
+							linebuffer[i] = bgcolor;
+						else
+						{
+							uint8_t * pixel = (uint8_t *) &linebuffer[i];
+							const uint8_t * color = (uint8_t *) &bgcolor;
+							pixel[0] = (pixel[0] * bgalpha) / 0xFF + color[0];
+							pixel[1] = (pixel[1] * bgalpha) / 0xFF + color[1];
+							pixel[2] = (pixel[2] * bgalpha) / 0xFF + color[2];
+						}
+					}
+				}
+			}
+			else
+			{
+				// Write pixel line
+				for (i = 0; i < font.char_width; ++ i)
+				{
+					if (data & (1 << i))
+						linebuffer[i] = fgcolor;
+					else
+						linebuffer[i] = bgcolor;
+				}
+			}
 
 			// Copy the line into the framebuffer
-			ksceKernelMemcpyKernelToUser((uintptr_t)(framebuffer + (display.text_x + i) + (display.text_y + j) * linesize), linebuffer, font.char_width * sizeof(uint32_t));
+			ksceKernelMemcpyKernelToUser((uintptr_t)(framebuffer + display.text_x + (display.text_y + j) * linesize), linebuffer, font.char_width * sizeof(uint32_t));
 		}
 	}
 
