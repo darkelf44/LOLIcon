@@ -132,8 +132,8 @@ static int hook_CtrlPeekBufferPositive(int port, SceCtrlData *ctrl, int count)
 
 	if (result > 0)
 	{
-		input_handle(port, ctrl->buttons);
-		input_filter(port, &ctrl->buttons);
+		input_handle(port, ctrl);
+		input_filter(port, ctrl);
 	}
 
 	return result;
@@ -147,8 +147,8 @@ static int hook_CtrlReadBufferPositive(int port, SceCtrlData *ctrl, int count)
 
 	if (result > 0)
 	{
-		input_handle(port, ctrl->buttons);
-		input_filter(port, &ctrl->buttons);
+		input_handle(port, ctrl);
+		input_filter(port, ctrl);
 	}
 
 	return result;
@@ -162,8 +162,8 @@ static int hook_CtrlPeekBufferPositive2(int port, SceCtrlData *ctrl, int count)
 
 	if (result > 0)
 	{
-		input_handle(port, ctrl->buttons);
-		input_filter(port, &ctrl->buttons);
+		input_handle(port, ctrl);
+		input_filter(port, ctrl);
 	}
 
 	return result;
@@ -177,8 +177,8 @@ static int hook_CtrlReadBufferPositive2(int port, SceCtrlData *ctrl, int count)
 
 	if (result > 0)
 	{
-		input_handle(port, ctrl->buttons);
-		input_filter(port, &ctrl->buttons);
+		input_handle(port, ctrl);
+		input_filter(port, ctrl);
 	}
 
 	return result;
@@ -192,8 +192,8 @@ static int hook_CtrlPeekBufferPositiveExt(int port, SceCtrlData *ctrl, int count
 
 	if (result > 0)
 	{
-		input_handle(port, ctrl->buttons);
-		input_filter(port, &ctrl->buttons);
+		input_handle(port, ctrl);
+		input_filter(port, ctrl);
 	}
 
 	return result;
@@ -207,8 +207,8 @@ static int hook_CtrlReadBufferPositiveExt(int port, SceCtrlData *ctrl, int count
 
 	if (result > 0)
 	{
-		input_handle(port, ctrl->buttons);
-		input_filter(port, &ctrl->buttons);
+		input_handle(port, ctrl);
+		input_filter(port, ctrl);
 	}
 
 	return result;
@@ -222,8 +222,8 @@ static int hook_CtrlPeekBufferPositiveExt2(int port, SceCtrlData *ctrl, int coun
 
 	if (result > 0)
 	{
-		input_handle(port, ctrl->buttons);
-		input_filter(port, &ctrl->buttons);
+		input_handle(port, ctrl);
+		input_filter(port, ctrl);
 	}
 
 	return result;
@@ -237,8 +237,8 @@ static int hook_CtrlReadBufferPositiveExt2(int port, SceCtrlData *ctrl, int coun
 
 	if (result > 0)
 	{
-		input_handle(port, ctrl->buttons);
-		input_filter(port, &ctrl->buttons);
+		input_handle(port, ctrl);
+		input_filter(port, ctrl);
 	}
 
 	return result;

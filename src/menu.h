@@ -3,7 +3,7 @@
 // Function type for drawing the menu
 typedef void (* MenuDrawFunction) (void);
 // Function type for handling the input
-typedef void (* MenuInputFunction) (uint32_t pressed, uint32_t released, uint32_t held);
+typedef void (* MenuInputFunction) (uint32_t pressed, uint32_t up, uint32_t down, uint32_t held);
 
 struct S_Menu
 {
