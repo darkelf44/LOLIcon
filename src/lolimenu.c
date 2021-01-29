@@ -10,6 +10,9 @@ int module_start(SceSize args, void *argp)
 	
 	// Install hooks
 	hooks_install();
+	
+	// Return
+	return SCE_KERNEL_START_SUCCESS;
 }
 
 // Finalize module
@@ -17,4 +20,7 @@ int module_stop(SceSize argc, const void *args)
 {
 	// Uninstall hooks
 	hooks_uninstall();
+	
+	// Return
+	return SCE_KERNEL_STOP_SUCCESS;
 }

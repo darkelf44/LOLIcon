@@ -131,7 +131,10 @@ static int hook_CtrlPeekBufferPositive(int port, SceCtrlData *ctrl, int count)
 		result = TAI_CONTINUE(int, hooks[5].ref, port, ctrl, count);
 
 	if (result > 0)
+	{
 		input_handle(port, ctrl->buttons);
+		input_filter(port, &ctrl->buttons);
+	}
 
 	return result;
 }
@@ -143,7 +146,10 @@ static int hook_CtrlReadBufferPositive(int port, SceCtrlData *ctrl, int count)
 		result = TAI_CONTINUE(int, hooks[6].ref, port, ctrl, count);
 
 	if (result > 0)
+	{
 		input_handle(port, ctrl->buttons);
+		input_filter(port, &ctrl->buttons);
+	}
 
 	return result;
 }
@@ -155,7 +161,10 @@ static int hook_CtrlPeekBufferPositive2(int port, SceCtrlData *ctrl, int count)
 		result = TAI_CONTINUE(int, hooks[7].ref, port, ctrl, count);
 
 	if (result > 0)
+	{
 		input_handle(port, ctrl->buttons);
+		input_filter(port, &ctrl->buttons);
+	}
 
 	return result;
 }
@@ -167,7 +176,10 @@ static int hook_CtrlReadBufferPositive2(int port, SceCtrlData *ctrl, int count)
 		result = TAI_CONTINUE(int, hooks[8].ref, port, ctrl, count);
 
 	if (result > 0)
+	{
 		input_handle(port, ctrl->buttons);
+		input_filter(port, &ctrl->buttons);
+	}
 
 	return result;
 }
@@ -179,7 +191,10 @@ static int hook_CtrlPeekBufferPositiveExt(int port, SceCtrlData *ctrl, int count
 		result = TAI_CONTINUE(int, hooks[9].ref, port, ctrl, count);
 
 	if (result > 0)
+	{
 		input_handle(port, ctrl->buttons);
+		input_filter(port, &ctrl->buttons);
+	}
 
 	return result;
 }
@@ -191,7 +206,10 @@ static int hook_CtrlReadBufferPositiveExt(int port, SceCtrlData *ctrl, int count
 		result = TAI_CONTINUE(int, hooks[10].ref, port, ctrl, count);
 
 	if (result > 0)
+	{
 		input_handle(port, ctrl->buttons);
+		input_filter(port, &ctrl->buttons);
+	}
 
 	return result;
 }
@@ -203,7 +221,10 @@ static int hook_CtrlPeekBufferPositiveExt2(int port, SceCtrlData *ctrl, int coun
 		result = TAI_CONTINUE(int, hooks[11].ref, port, ctrl, count);
 
 	if (result > 0)
+	{
 		input_handle(port, ctrl->buttons);
+		input_filter(port, &ctrl->buttons);
+	}
 
 	return result;
 }
@@ -215,7 +236,10 @@ static int hook_CtrlReadBufferPositiveExt2(int port, SceCtrlData *ctrl, int coun
 		result = TAI_CONTINUE(int, hooks[12].ref, port, ctrl, count);
 
 	if (result > 0)
+	{
 		input_handle(port, ctrl->buttons);
+		input_filter(port, &ctrl->buttons);
+	}
 
 	return result;
 }

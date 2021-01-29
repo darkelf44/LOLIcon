@@ -3,7 +3,7 @@
 
 // Colors
 #define FGCOLOR 0xFFFFFFFF
-#define BGCOLOR 0x66FF0000
+#define BGCOLOR 0x55000000
 #define FGSELECT 0xFFFFFFFF
 #define BGSELECT 0xFF00FF00
 
@@ -20,7 +20,7 @@ void menu_init(void)
 	// Display main menu
 	menu.selected = 0;
 	menu.draw_func = menu_main_draw;
-	menu.input_func = menu_main_input;
+	menu.input_func = (MenuInputFunction) menu_main_input;
 }
 
 // Open the menu
@@ -33,7 +33,7 @@ void menu_open(void)
 	// Display main menu
 	menu.selected = 0;
 	menu.draw_func = menu_main_draw;
-	menu.input_func = menu_main_input;
+	menu.input_func = (MenuInputFunction) menu_main_input;
 }
 
 // Close the menu
@@ -119,8 +119,23 @@ void menu_main_input(uint32_t pressed)
 			case 0:
 				// Switch to "Global settings" page
 				menu.draw_func = menu_global_settings_draw;
-				menu.input_func = menu_global_settings_input;
+				menu.input_func = (MenuInputFunction) menu_global_settings_input;
 				menu.selected = 0;
+				break;
+				
+			case 8:
+				// Suspend Vita
+				kscePowerRequestSuspend();
+				break;
+				
+			case 9:
+				// Restart Vita
+				kscePowerRequestColdReset();
+				break;
+
+			case 10:
+				// Shutdown Vita
+				kscePowerRequestStandby();
 				break;
 		}
 	}
@@ -137,7 +152,7 @@ void menu_global_settings_input(uint32_t pressed)
 	if (pressed & SCE_CTRL_CIRCLE)
 	{
 		menu.draw_func = menu_main_draw;
-		menu.input_func = menu_main_input;
+		menu.input_func = (MenuInputFunction) menu_main_input;
 		menu.selected = 0;
 	}
 }
