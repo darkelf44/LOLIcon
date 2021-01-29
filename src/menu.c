@@ -3,7 +3,7 @@
 
 // Colors
 #define FGCOLOR 0xFFFFFFFF
-#define BGCOLOR 0xFFFF0000
+#define BGCOLOR 0x66FF0000
 #define FGSELECT 0xFFFFFFFF
 #define BGSELECT 0xFF00FF00
 
@@ -81,33 +81,65 @@ void menu_draw_entry(int16_t index, const char * text)
 
 void menu_main_draw(void)
 {
-	menu_draw_title(ICON_LOLI "Menu" " [indev]", 26);
+	menu_draw_title(ICON_LOLI "Menu" " [indev]", 24);
 	
-	menu_draw_entry(0, "Display settings");
+	menu_draw_entry(0, "Global settings");
 	menu_draw_entry(1, "Control settings");
 	menu_draw_entry(2, "Overclock settings");
-	menu_draw_entry(3, "Save profile");
-	menu_draw_entry(4, "Save profile as default");
-	menu_draw_entry(5, "Reset profile");
-	menu_draw_entry(6, "Exit game");
+	menu_draw_entry(3, "Tools");
+	menu_draw_entry(4, "Save profile");
+	menu_draw_entry(5, "Save profile as default");
+	menu_draw_entry(6, "Reset profile");
+	menu_draw_entry(7, "Exit game");
 	display.text_y += 8;
-	menu_draw_entry(7, ICON_SLEEP " Suspend vita");
-	menu_draw_entry(8, ICON_RESTART " Restart vita");
-	menu_draw_entry(9, ICON_POWER " Shutdown vita");
+	menu_draw_entry(8, ICON_SLEEP " Suspend vita");
+	menu_draw_entry(9, ICON_RESTART " Restart vita");
+	menu_draw_entry(10, ICON_POWER " Shutdown vita");
 }
 
-void menu_main_input(uint32_t up, uint32_t down, uint32_t held)
+void menu_main_input(uint32_t pressed)
 {
-	/*
-	if (down & SCE_CTRL_UP)
-	{
-		menu.selected --;
-	}
+	// Contants
+	static const int count = 11;
 	
-	if (down & SCE_CTRL_DOWN)
+	// Navigate
+	if (pressed & SCE_CTRL_UP)
+		menu.selected = (menu.selected - 1) % count;
+	if (pressed & SCE_CTRL_DOWN)
+		menu.selected = (menu.selected + 1) % count;
+		
+	// Cancel
+	if (pressed & SCE_CTRL_CIRCLE)
+		menu.selected = 0;
+	// Accept
+	if (pressed & SCE_CTRL_CROSS)
 	{
-		menu.selected ++;
+		switch (menu.selected)
+		{
+			case 0:
+				// Switch to "Global settings" page
+				menu.draw_func = menu_global_settings_draw;
+				menu.input_func = menu_global_settings_input;
+				menu.selected = 0;
+				break;
+		}
 	}
-	*/
 }
+
+void menu_global_settings_draw(void)
+{
+	menu_draw_title(ICON_LOLI "Menu" " - Global settings", 26);
+}
+
+void menu_global_settings_input(uint32_t pressed)
+{
+	// Cancel
+	if (pressed & SCE_CTRL_CIRCLE)
+	{
+		menu.draw_func = menu_main_draw;
+		menu.input_func = menu_main_input;
+		menu.selected = 0;
+	}
+}
+
 

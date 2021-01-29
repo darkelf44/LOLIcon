@@ -1,0 +1,20 @@
+#include <common.h>
+
+//  Initialize module
+void _start() __attribute__ ((weak, alias("module_start")));
+int module_start(SceSize args, void *argp)
+{
+	// Initialize subsystems
+	menu_init();
+	display_init();
+	
+	// Install hooks
+	hooks_install();
+}
+
+// Finalize module
+int module_stop(SceSize argc, const void *args)
+{
+	// Uninstall hooks
+	hooks_uninstall();
+}

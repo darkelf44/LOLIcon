@@ -25,16 +25,13 @@ link_directories(
 )
 
 add_executable(${PROJECT_NAME}
-	src/LOLIcon.c
-	src/blit.c
-	src/font.c
-	src/utils.c
-
 	src/menu.c
 	src/input.c
 	src/display.c
 	src/logging.c
 	src/monospace.c
+	src/hooks.c
+	src/lolimenu.c
 )
 
 target_link_libraries(${PROJECT_NAME}
