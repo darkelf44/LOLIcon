@@ -11,7 +11,7 @@ endif()
 project(lolimenu)
 include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-q -Wall -O3 -std=gnu99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-q -Wall -O3 -std=gnu99 -fno-builtin-logf")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nostdlib")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fno-rtti -fno-exceptions")
 
@@ -30,7 +30,10 @@ add_executable(${PROJECT_NAME}
 	src/font.c
 	src/utils.c
 
+	src/menu.c
+	src/input.c
 	src/display.c
+	src/logging.c
 	src/monospace.c
 )
 

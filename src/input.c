@@ -7,6 +7,7 @@ static uint32_t prev_buttons[MAX_INPUT_PORTS] = {0};
 void input_handle(int8_t port, uint32_t buttons)
 {
 	// Variables
+	static bool enable_logging = false;
 	uint32_t pressed, released;
 	
 	if (port >= MAX_INPUT_PORTS)
@@ -19,8 +20,8 @@ void input_handle(int8_t port, uint32_t buttons)
 	// Update previous buttons
 	prev_buttons[port] = buttons;
 
-	// Events on button press or release
-	if (pressed | released)
+	// Handle events on the first port only
+	if ((port == 0) && (pressed | released))
 	{
 		// SELECT + UP - Opens and closes the menu
 		if ((pressed & SCE_CTRL_UP) && (buttons & SCE_CTRL_SELECT))
@@ -33,6 +34,11 @@ void input_handle(int8_t port, uint32_t buttons)
 				
 			// stop handing inputs
 			return;
+		}
+
+		if ((pressed & SCE_CTRL_DOWN) && (buttons & SCE_CTRL_SELECT))
+		{
+			enable_logging = false;
 		}
 
 		// Call menu input handler
