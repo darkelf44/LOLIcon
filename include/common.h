@@ -15,8 +15,8 @@
 #include <string.h>
 
 // Module headers
-#include "../src/menu.h"
-#include "../src/input.h"
-#include "../src/display.h"
-#include "../src/logging.h"
-#include "../src/hooks.h"
+#include "menu.h"
+#include "input.h"
+#include "display.h"
+#include "logging.h"
+#include "hooks.h"
