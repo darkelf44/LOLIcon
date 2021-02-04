@@ -39,6 +39,9 @@ struct S_Display
 	// Framebuffer settings
 	SceDisplayFrameBuf framebuffer;
 	
+	// Display mutex
+	KMutex mutex;
+	
 	// Text settings
 	uint16_t text_x;
 	uint16_t text_y;

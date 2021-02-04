@@ -1,5 +1,6 @@
 // Include file header
-#include <kio.h>
+#include <util/kio.h>
+#include <util/klib.h>
 
 // Kernel includes
 #include <psp2kern/io/fcntl.h>

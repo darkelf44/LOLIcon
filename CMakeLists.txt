@@ -31,7 +31,12 @@ add_executable(${PROJECT_NAME}
 	src/logging.c
 	src/monospace.c
 	src/hooks.c
+	src/menu.c
 	src/lolimenu.c
+	
+	src/util/kio.c
+	src/util/klib.c
+	src/util/kstr.c
 )
 
 target_link_libraries(${PROJECT_NAME}

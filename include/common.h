@@ -14,6 +14,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Utility headers
+#include "util/kio.h"
+#include "util/klib.h"
+#include "util/kstr.h"
+#include "util/kchar.h"
+
 // Module headers
 #include "menu.h"
 #include "input.h"

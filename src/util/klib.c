@@ -1,5 +1,5 @@
 // Include file header
-#include <klib.h>
+#include <util/klib.h>
 
 // Kernel includes
 #include <psp2kern/kernel/sysmem.h> 

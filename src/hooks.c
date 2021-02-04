@@ -79,12 +79,24 @@ static int hook_DisplaySetFrameBufInternalForDriver(int fb_id1, int fb_id2, cons
 
 	if (fb_id1 && pParam)
 	{
-		// Set framebuffer
-		display_set_framebuffer(pParam);
+		// Check focused process
+		SceUID pid = ksceKernelGetProcessId();
+		if (pid != focus_pid)
+			focus_changed(pid);
 
-		// Draw menu
-		if (menu.visible)
+		// Lock display mutex
+		if (kmutex_try_lock(&display.mutex))
+		{
+			// Set framebuffer
+			display_set_framebuffer(pParam);
+
+			// Draw menu
+			if (menu.visible)
 				menu.draw_func();
+
+			// Unlock mutex
+			kmutex_unlock(&display.mutex);
+		}
 	}
 
 	if (hooks[0].ref)

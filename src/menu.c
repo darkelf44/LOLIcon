@@ -103,10 +103,10 @@ void menu_main_input(uint32_t pressed)
 	static const int count = 11;
 	
 	// Navigate
-	if (pressed & SCE_CTRL_UP)
-		menu.selected = (menu.selected - 1) % count;
-	if (pressed & SCE_CTRL_DOWN)
-		menu.selected = (menu.selected + 1) % count;
+	if ((pressed & SCE_CTRL_UP) && menu.selected > 0)
+		-- menu.selected;
+	if ((pressed & SCE_CTRL_DOWN) && menu.selected < count -1)
+		++ menu.selected;
 		
 	// Cancel
 	if (pressed & SCE_CTRL_CIRCLE)

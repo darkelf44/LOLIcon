@@ -2,10 +2,17 @@
 #include <common.h>
 
 // Controller repeat delays
-#define REPEAT_DELAY_FIRST 5000000
-#define REPEAT_DELAY_AFTER 2500000
+#define REPEAT_DELAY_FIRST 6000000
+#define REPEAT_DELAY_AFTER 4000000
 
-// Global variables
+// Focus variables
+char focus_name[FOCUS_NAME_MAX];
+SceUID focus_pid = 0;
+bool focus_is_shell = false;
+bool focus_is_pspemu = false;
+
+
+// Input variables
 static uint32_t repeat = 0;
 static uint32_t prev_buttons = 0;
 
@@ -72,3 +79,19 @@ void input_filter(int8_t port, SceCtrlData * ctrl)
 	if (menu.capture)
 		ctrl->buttons = 0;
 }
+
+void focus_changed(SceUID pid)
+{
+	// Get focused process name
+	focus_pid = pid;
+	if (ksceKernelGetProcessTitleId(pid, focus_name, FOCUS_NAME_MAX) == 0)
+	{
+		focus_is_shell = kstreq("main", focus_name);
+		focus_is_pspemu = kstreq("PSPEMUCFW", focus_name);
+	}
+	
+	// TODO: reload config
+	
+	// TODO: apply overclocks
+}
+
