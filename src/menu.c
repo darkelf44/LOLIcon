@@ -67,6 +67,7 @@ static void menu_draw_entry(int16_t index, const char * text, int16_t align)
 	// Variables
 	size_t n = strlen(text);
 	uint16_t dx = display.font->char_width;
+	uint32_t fgcolor, bgcolor;
 
 	// Align text vertically
 	if (align > 0)
@@ -75,10 +76,26 @@ static void menu_draw_entry(int16_t index, const char * text, int16_t align)
 		display.text_x = (display.framebuffer.width / 2) - align * dx + - n * dx;
 	else
 		display.text_x = (display.framebuffer.width - n * dx) / 2;
+		
+	// Set colors
+	if (index == menu.page->selected)
+	{
+		fgcolor = global_config.selected_color;
+		bgcolor = global_config.selected_background;
+	}
+	else if (index < 0)
+	{
+		fgcolor = global_config.disabled_color;
+		bgcolor = global_config.disabled_background;
+	}
+	else
+	{
+		fgcolor = global_config.menu_color;
+		bgcolor = global_config.menu_background;
+	}
 
 	// Draw entry
-	display_draw_text(text, n, (index == menu.page->selected) ? FGSELECT : FGCOLOR, (index == menu.page->selected) ? BGSELECT : BGCOLOR);
-
+	display_draw_text(text, n, fgcolor, bgcolor);
 }
 
 static INLINE void menu_draw_entry_ln(int16_t index, const char * text, int16_t align)
@@ -89,7 +106,6 @@ static INLINE void menu_draw_entry_ln(int16_t index, const char * text, int16_t 
 	// Start new line
 	display.text_y += display.font->char_height;
 }
-
 
 // Main Menu page
 
@@ -242,6 +258,10 @@ static void menu_information_and_tools_input(uint32_t pressed)
 	// Cancel
 	if (pressed & SCE_CTRL_CIRCLE)
 		menu.page = menu.page->previous;
+		
+	// Unlock controls
+	if (pressed & SCE_CTRL_R3)
+		menu.capture = !menu.capture;
 }
 
 Page menu_page_information_and_tools = { NULL, 0, &menu_information_and_tools_draw, (MenuInputFunction) &menu_information_and_tools_input };

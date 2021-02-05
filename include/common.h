@@ -21,8 +21,9 @@
 #include "util/kchar.h"
 
 // Module headers
+#include "logging.h"
+#include "config.h"
+#include "display.h"
 #include "menu.h"
 #include "input.h"
-#include "display.h"
-#include "logging.h"
 #include "hooks.h"

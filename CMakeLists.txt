@@ -25,14 +25,14 @@ link_directories(
 )
 
 add_executable(${PROJECT_NAME}
+	src/config.c
+	src/display.c
+	src/monospace.c
 	src/menu.c
 	src/input.c
-	src/display.c
-	src/logging.c
-	src/monospace.c
 	src/hooks.c
-	src/menu.c
 	src/lolimenu.c
+	src/logging.c
 	
 	src/util/kio.c
 	src/util/klib.c
