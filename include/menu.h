@@ -5,20 +5,29 @@ typedef void (* MenuDrawFunction) (void);
 // Function type for handling the input
 typedef void (* MenuInputFunction) (uint32_t pressed, uint32_t up, uint32_t down, uint32_t held);
 
-struct S_Menu
+struct SPage
+{
+	// Selcted line
+	int32_t selected;
+	// Previous page
+	struct SPage * previous;
+	// Draw function
+	MenuDrawFunction draw_func;
+	// Input function
+	MenuInputFunction input_func;
+};
+typedef struct SPage Page;
+
+struct SMenu
 {
 	// If the menu is visible
 	bool visible;
 	// Capture the input (usually be the same as visible)
 	bool capture;
-	// Index of the selected item
-	int16_t selected;
-	
-	// Current draw and input functions
-	MenuDrawFunction draw_func;
-	MenuInputFunction input_func;
+	// Current page
+	Page * page;
 };
-typedef struct S_Menu Menu;
+typedef struct SMenu Menu;
 
 // Global variables
 extern Menu menu;
@@ -28,26 +37,15 @@ void menu_init(void);
 void menu_open(void);
 void menu_close(void);
 
+// Menu pages
+extern Page menu_page_main;
+extern Page menu_page_global_settings;
+extern Page menu_page_control_settings;
+extern Page menu_page_overclock_settings;
+extern Page menu_page_information_and_tools;
+
+// Window pages
+extern Page menu_page_confirm;
+extern Page menu_page_edit_color;
+
 // Draw functions
-void menu_draw_title(const char * title, uint16_t width);
-void menu_draw_entry(int16_t index, const char * text);
-
-// Functions for main menu
-void menu_main_draw(void);
-void menu_main_input(uint32_t pressed);
-
-// Functions for "Global settings" menu
-void menu_global_settings_draw(void);
-void menu_global_settings_input(uint32_t pressed);
-
-// Functions for "Control settings" menu
-void menu_control_settings_draw(void);
-void menu_control_settings_input(uint32_t pressed);
-
-// Functions for "Overclock settings" menu
-void menu_overclock_settings_draw(void);
-void menu_overclock_settings_input(uint32_t pressed);
-
-// Functions for "Tools" menu
-void menu_tools_draw(void);
-void menu_tools_input(uint32_t pressed);

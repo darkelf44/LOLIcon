@@ -1,7 +1,7 @@
 #include <common.h>
 
 //  Initialize module
-void _start() __attribute__ ((weak, alias("module_start")));
+void _start() __attribute__((weak, alias("module_start")));
 int module_start(SceSize args, void *argp)
 {
 	// Initialize subsystems

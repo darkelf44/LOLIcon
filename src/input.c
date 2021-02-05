@@ -69,7 +69,7 @@ void input_handle(int8_t port, SceCtrlData * ctrl)
 
 		// Call menu input handler
 		if (menu.capture)
-			menu.input_func(pressed, up, down, held);
+			menu.page->input_func(pressed, up, down, held);
 	}
 }
 

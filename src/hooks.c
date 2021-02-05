@@ -92,7 +92,7 @@ static int hook_DisplaySetFrameBufInternalForDriver(int fb_id1, int fb_id2, cons
 
 			// Draw menu
 			if (menu.visible)
-				menu.draw_func();
+				menu.page->draw_func();
 
 			// Unlock mutex
 			kmutex_unlock(&display.mutex);
