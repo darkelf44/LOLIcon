@@ -42,7 +42,7 @@ void config_reset_global()
 	global_config.disabled_color      = 0xFF888888;	// Grey
 	global_config.disabled_background = 0x44000000;	// Black (transparent)
 	global_config.selected_color      = 0xFFFFFFFF;	// White
-	global_config.selected_background = 0x4400FF00;	// Green (transparent)
+	global_config.selected_background = 0x8800FF00;	// Green (transparent)
 }
 
 // Reset profile configuration
@@ -51,6 +51,7 @@ void config_reset_profile(ProfileConfig * config)
 	// Reset controls
 	config->enable_button_swap = false;
 	config->enable_button_remap = false;
+	config->disable_button_L3_R3 = false;
 
 	// Reset bluetooth controls
 	config->bluetooth_touch_mode = false;

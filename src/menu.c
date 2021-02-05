@@ -107,6 +107,19 @@ static INLINE void menu_draw_entry_ln(int16_t index, const char * text, int16_t 
 	display.text_y += display.font->char_height;
 }
 
+// Converts a boolean to a toggle for drawing
+static INLINE const char * to_toggle(bool value)
+{
+	return value ? ICON_ON : ICON_OFF;
+}
+
+// Converts an integer to a slider for drawing
+static INLINE const char * to_slider(int16_t value, int16_t max)
+{
+	return "";
+}
+
+
 // Main Menu page
 
 static void menu_main_draw(void)
@@ -215,13 +228,39 @@ Page menu_page_global_settings = { NULL, 0, &menu_global_settings_draw, (MenuInp
 static void menu_control_settings_draw(void)
 {
 	menu_draw_title(ICON_LOLI "Menu" " / Control settings");
+	
+	menu_draw_entry(0, "Swap the " ICON_CROSS " and " ICON_CIRCLE " buttons", 20); menu_draw_entry_ln(0, to_toggle(profile_config->enable_button_swap), -20);
+	menu_draw_entry(1, "Disable the L3 and R3 buttons", 20); menu_draw_entry_ln(1, to_toggle(profile_config->disable_button_L3_R3), -20);
+
 }
 
 static void menu_control_settings_input(uint32_t pressed)
 {
+	// Contants
+	static const int count = 2;
+
+	// Navigate
+	if ((pressed & SCE_CTRL_UP) && menu.page->selected > 0)
+		-- menu.page->selected;
+	if ((pressed & SCE_CTRL_DOWN) && menu.page->selected < count -1)
+		++ menu.page->selected;
+
 	// Cancel
 	if (pressed & SCE_CTRL_CIRCLE)
 		menu.page = menu.page->previous;
+	// Accept
+	if (pressed & SCE_CTRL_CROSS)
+	{
+		switch (menu.page->selected)
+		{
+			case 0:
+				profile_config->enable_button_swap = !profile_config->enable_button_swap;
+				break;
+			case 1:
+				profile_config->disable_button_L3_R3 = !profile_config->disable_button_L3_R3;
+				break;
+		}
+	}
 }
 
 Page menu_page_control_settings = { NULL, 0, &menu_control_settings_draw, (MenuInputFunction) &menu_control_settings_input };

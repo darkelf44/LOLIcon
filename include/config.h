@@ -21,6 +21,7 @@ struct SProfileConfig
 	bool enable_button_swap;
 	bool enable_button_remap;
 	uint8_t button_remap_table[16];
+	bool disable_button_L3_R3;
 	
 	// Bluetooth settings
 	uint8_t bluetooth_touch_mode;
