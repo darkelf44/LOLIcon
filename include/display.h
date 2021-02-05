@@ -5,7 +5,7 @@
 
 // Icons in the font
 #define ICON_PSLOGO   "\x01\x02"
-#define ICON_LOLI    "\x11\x12\x13"
+#define ICON_LOLI     "\x1d\x1e\x1f"
 
 #define ICON_ON       "\x0e\x0f\x10"
 #define ICON_OFF      "\x0b\x0c\x0d"
@@ -20,10 +20,11 @@
 #define ICON_CROSS    "\x05"
 #define ICON_SQUARE   "\x06"
 
-#define ICON_BT       "\x14"
-#define ICON_POWER    "\x15"
-#define ICON_RESTART  "\x16"
-#define ICON_SLEEP    "\x17"
+#define ICON_BT       "\x18"
+#define ICON_POWER    "\x19"
+#define ICON_RESTART  "\x1a"
+#define ICON_SLEEP    "\x1b"
+#define ICON_TARGET   "\x1c"
 
 struct S_Font
 {
