@@ -1,9 +1,12 @@
 // Include headers
 #include <common.h>
 
+// Inputs timestamps within this range are assumed to be old values
+#define TIMESTAMP_SHADOW 100000
+
 // Controller repeat delays
-#define REPEAT_DELAY_FIRST 6000000
-#define REPEAT_DELAY_AFTER 4000000
+#define REPEAT_DELAY_FIRST 400000
+#define REPEAT_DELAY_AFTER 200000
 
 // Focus variables
 char focus_name[FOCUS_NAME_MAX];
@@ -31,6 +34,14 @@ void input_handle(int8_t port, SceCtrlData * ctrl)
 		uint32_t down = 0;
 		uint32_t up = 0;
 		uint32_t held = ctrl->buttons;
+		
+		// Do not process old inputs
+		if (prev_timestamp - ctrl->timeStamp < TIMESTAMP_SHADOW)
+		{
+			// Release mutex and return
+			kmutex_unlock(&mutex);
+			return;
+		}
 
 		// Process button events
 		if (ctrl->buttons != prev_buttons)
@@ -56,24 +67,25 @@ void input_handle(int8_t port, SceCtrlData * ctrl)
 		prev_buttons = ctrl->buttons;
 		prev_timestamp = ctrl->timeStamp;
 
+		// SELECT + UP - Opens and closes the menu
+		if ((pressed & SCE_CTRL_UP) && (held & SCE_CTRL_SELECT))
+		{
+			// Open or close the menu
+			if (menu.visible)
+				menu_close();
+			else
+				menu_open();
+				
+			// Clear pressed button
+			pressed &= ~SCE_CTRL_UP;
+		}
+
 		// Handle events
 		if (pressed)
 		{
-			// SELECT + UP - Opens and closes the menu
-			if ((pressed & SCE_CTRL_UP) && (held & SCE_CTRL_SELECT))
-			{
-				// Open or close the menu
-				if (menu.visible)
-					menu_close();
-				else
-					menu_open();
-			}
-			else
-			{
-				// Call menu input handler
-				if (menu.visible)
-					menu.page->input_func(pressed, up, down, held);
-			}
+			// Call menu input handler
+			if (menu.visible)
+				menu.page->input_func(pressed, up, down, held);
 		}
 		
 		// Release mutex
