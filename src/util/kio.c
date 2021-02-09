@@ -1,5 +1,7 @@
 // Include file header
 #include <util/kio.h>
+
+// Local includes
 #include <util/klib.h>
 
 // Kernel includes
@@ -275,7 +277,7 @@ void kfclear(KFile * file)
 
 bool kfflush(KFile * file)
 {
-	
+
 	// Flush all
 	if (!file)
 	{
@@ -427,7 +429,7 @@ bool kfseek(KFile * file, SceOff offset, int mode)
 	// Variables
 	SceOff pos;
 	int sce_mode;
-	
+
 	// Translate mode
 	switch (mode)
 	{
@@ -437,10 +439,10 @@ bool kfseek(KFile * file, SceOff offset, int mode)
 		default:
 			return false;
 	}
-	
+
 	// Flush file (when needed)
 	wflush(file);
-	
+
 	// Seek the stream
 	pos = file->offset = ksceIoLseek(file->fd, offset, sce_mode);
 	if (pos == (SceOff) -1)
@@ -465,6 +467,25 @@ bool ksetbuf(KFile * file, char * buffer, int mode, size_t size)
 	return false;
 }
 
+// Format type values
+#define FORMAT_TYPE_DEFAULT 0
+#define FORMAT_TYPE_HH 1
+#define FORMAT_TYPE_H  2
+#define FORMAT_TYPE_L  3
+#define FORMAT_TYPE_LL 4
+#define FORMAT_TYPE_J  5
+#define FORMAT_TYPE_Z  6
+#define FORMAT_TYPE_T  7
+
+// Format flag values
+#define FORMAT_FLAG_BLANK 1
+#define FORMAT_FLAG_SIGN  2
+#define FORMAT_FLAG_LEFT  4
+#define FORMAT_FLAG_ALTER 8
+#define FORMAT_FLAG_ZERO  0x10
+#define FORMAT_FLAG_VARIABLE_WIDTH     0x20
+#define FORMAT_FLAG_VARIABLE_PRECISION 0x40
+
 size_t kfprintf(KFile * file, const char * format, ...)
 {
 	// FIXME: Not implemented
@@ -483,8 +504,199 @@ size_t kfprintfv(KFile * file, const char * format, va_list list)
 	return 0;
 }
 
+/*
 size_t ksprintfv(char * buffer, size_t n, const char * format, va_list list)
 {
-	// FIXME: Not implemented
+	// Variables
+	char * end = buffer + (n - 1);
+
+	// Process format string
+	for (; *format && buffer < end; ++ format)
+	{
+		if (*format == '%')
+		{
+			// Variables
+			uint8_t type = 0;
+			uint8_t flags = 0;
+			size_t width = 0;
+			size_t precision = -1;
+
+			// Next character
+			++ format;
+
+			// Process format flags
+			while (*format == ' ' || *format == '+' || *format == '-' ||*format == '#' ||*format == '0');
+			{
+				switch (*format)
+				{
+					case ' ':
+						flags |= FORMAT_FLAG_BLANK;
+						break;
+					case '+':
+						flags |= FORMAT_FLAG_SIGN;
+						break;
+					case '-':
+						flags |= FORMAT_FLAG_LEFT;
+						break;
+					case '#':
+						flags |= FORMAT_FLAG_ALTER;
+						break;
+					case '0':
+						flags |= FORMAT_FLAG_ZERO;
+						break;
+				}
+				++ format;
+			}
+
+			// Process format width
+			if (*format == '*')
+			{
+				flags |= FORMAT_FLAG_VARIABLE_WIDTH;
+				++ format;
+			}
+			else if (*format >= '1' && *format <= '9')
+			{
+				width = 0;
+				for (; *format >= '0' && *format <= '9'; ++ format)
+					width = width * 10 + *format - '0';
+			}
+
+			// Process format precision
+			if (*format == '.')
+			{
+				++ format;
+				if (*format == '*')
+				{
+					flags |= FORMAT_FLAG_VARIABLE_PRECISION;
+					++ format;
+				}
+				else
+				{
+					precision = 0;
+					for (; *format >= '0' && *format <= '9'; ++ format)
+				}
+			}
+
+			// Process format type
+			switch (*format)
+			{
+				case 'h':
+					if (format[1] == 'h')
+					{
+						type = FORMAT_TYPE_HH;
+						format += 2;
+					}
+					else
+					{
+						type = FORMAT_TYPE_H;
+						++ format;
+					}
+					break;
+
+				case 'l':
+					if (format[1] == 'l')
+					{
+						type = FORMAT_TYPE_LL;
+						format += 2;
+					}
+					else
+					{
+						type = FORMAT_TYPE_L;
+						++ format;
+					}
+					break;
+
+				case 'L':
+					type = FORMAT_TYPE_LL;
+					++ format;
+					break;
+
+				case 'j':
+					type = FORMAT_TYPE_J;
+					++ format;
+					break;
+
+				case 'z':
+					type = FORMAT_TYPE_Z;
+					++ format;
+					break;
+
+				case 't':
+					type = FORMAT_TYPE_T;
+					++ format;
+					break;
+			}
+
+			// Check format string end
+			if (!*format)
+				break;
+
+			// Format
+			switch (*format)
+			{
+				// Single '%'
+				case '%':
+					*buffer = '%';
+					break;
+
+				// Get the number of characters written
+				case 'n':
+					break;
+
+				// Character
+				case 'c':
+					break;
+
+				// String
+				case 's':
+					break;
+
+				// Signed decimal
+				case 'd':
+				case 'i':
+					break;
+
+				// Unsigned decimal
+				case 'u':
+					break;
+
+				// Octal
+				case 'o':
+					break;
+
+				// Hexadecimal
+				case 'x':
+				case 'X':
+					break;
+
+				// Floating point (exponent)
+				case 'e':
+				case 'E':
+					break;
+
+				// Floating point (normal)
+				case 'f':
+				case 'F':
+					break;
+
+				// Hexadecimal (shortest)
+				case 'g':
+				case 'G':
+					break;
+
+				// Pointer
+				case 'p':
+					break;
+
+				// Invalid type
+				default:
+					*buffer = *format;
+			}
+		}
+		else
+			*buffer = *format;
+	}
+
 	return 0;
 }
+*/

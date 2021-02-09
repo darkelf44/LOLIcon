@@ -285,11 +285,15 @@ Page menu_page_overclock_settings = { NULL, 0, &menu_overclock_settings_draw, (M
 
 static void menu_information_and_tools_draw(void)
 {
+	// Variables
+	char buffer[20];
+	
 	menu_draw_title(ICON_LOLI "Menu" " / Information and Tools");
 
 	// Draw information screen
-	menu_draw_entry(100, "Process ID:", 12);	menu_draw_entry_ln(100, "?", -12);
-	menu_draw_entry(100, "Process title:", 12);	menu_draw_entry_ln(100, focus_name, -12);
+	menu_draw_entry(100, "Shell ID:", 12);	menu_draw_entry_ln(100, kuint2str(buffer, shell_pid), -12);
+	menu_draw_entry(100, "Focus ID:", 12);	menu_draw_entry_ln(100, kuint2str(buffer, focus_pid), -12);
+	menu_draw_entry(100, "Focus title:", 12);	menu_draw_entry_ln(100, focus_name, -12);
 }
 
 static void menu_information_and_tools_input(uint32_t pressed)
@@ -301,6 +305,12 @@ static void menu_information_and_tools_input(uint32_t pressed)
 	// Unlock controls
 	if (pressed & SCE_CTRL_R3)
 		menu.capture = !menu.capture;
+		
+	// Control logging
+	if (pressed & SCE_CTRL_L1)
+		enable_logging = true;
+	if (pressed & SCE_CTRL_R1)
+		enable_logging = false;
 }
 
 Page menu_page_information_and_tools = { NULL, 0, &menu_information_and_tools_draw, (MenuInputFunction) &menu_information_and_tools_input };

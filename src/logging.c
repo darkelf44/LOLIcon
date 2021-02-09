@@ -1,6 +1,9 @@
 // Include headers
 #include <common.h>
 
+// Enable/disable logging globally
+bool enable_logging = false;
+
 // Debug logging
 void logf(Severity level, const char * msg, ...)
 {
@@ -25,7 +28,7 @@ void logv(Severity level, const char * msg, va_list list)
 	
 	// Write to log file
 	{
-		SceUID fd = ksceIoOpen("ux0:/lolimenu/log.txt", SCE_O_RDWR|SCE_O_APPEND|SCE_O_CREAT, 0777);
+		SceUID fd = ksceIoOpen("ux0:/data/lolimenu.log", SCE_O_RDWR|SCE_O_APPEND|SCE_O_CREAT, 0777);
 		if (fd > 0)
 		{
 			ksceIoWrite(fd, buffer, n);

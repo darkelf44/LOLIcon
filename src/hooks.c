@@ -8,7 +8,7 @@ struct S_Hook
 typedef struct S_Hook Hook;
 
 // List of hooks
-#define HOOK_COUNT 14
+#define HOOK_COUNT 16
 static Hook hooks[HOOK_COUNT] = {0};
 
 // Hook functions
@@ -27,6 +27,8 @@ static int hook_CtrlPeekBufferPositiveExt(int port, SceCtrlData *ctrl, int count
 static int hook_CtrlReadBufferPositiveExt(int port, SceCtrlData *ctrl, int count);
 static int hook_CtrlPeekBufferPositiveExt2(int port, SceCtrlData *ctrl, int count);
 static int hook_CtrlReadBufferPositiveExt2(int port, SceCtrlData *ctrl, int count);
+
+static int hook_ProcEventForDriver_414CC813(int pid, int id, int r3, int r4, int r5, int r6);
 
 // Install kernel hooks
 void hooks_install(void)
@@ -62,6 +64,9 @@ void hooks_install(void)
 	hooks[11].id = taiHookFunctionOffsetForKernel(KERNEL_PID, &hooks[11].ref, SceCtrl_info.modid, 0, 0x4B48, 1, hook_CtrlPeekBufferPositiveExt2);
 	// Hook "sceCtrlReadBufferPositiveExt2"
 	hooks[12].id = taiHookFunctionOffsetForKernel(KERNEL_PID, &hooks[12].ref, SceCtrl_info.modid, 0, 0x4E14, 1, hook_CtrlReadBufferPositiveExt2);
+
+	// Hook "sceProcEventForDriver_414CC813"
+	hooks[13].id = taiHookFunctionImportForKernel(KERNEL_PID, &hooks[13].ref, "SceProcessmgr", TAI_ANY_LIBRARY, 0x414CC813, hook_ProcEventForDriver_414CC813);
 }
 
 // Uninstall kernel hooks
@@ -79,10 +84,11 @@ static int hook_DisplaySetFrameBufInternalForDriver(int fb_id1, int fb_id2, cons
 
 	if (fb_id1 && pParam)
 	{
-		// Check focused process
+		// Get process id
 		SceUID pid = ksceKernelGetProcessId();
-		if (pid != focus_pid)
-			focus_changed(pid);
+
+		// Update focus
+		focus_update(pid);
 
 		// Lock display mutex
 		if (kmutex_try_lock(&display.mutex))
@@ -255,3 +261,19 @@ static int hook_CtrlReadBufferPositiveExt2(int port, SceCtrlData *ctrl, int coun
 
 	return result;
 }
+
+static int hook_ProcEventForDriver_414CC813(int pid, int id, int r3, int r4, int r5, int r6)
+{
+	int result = 0;
+
+	if (focus_pid && pid == focus_pid)
+	{
+		// TODO
+	}
+
+	if (hooks[13].ref)
+		result = TAI_CONTINUE(int, hooks[13].ref, pid, id, r3, r4, r5, r6);
+
+	return result;
+}
+

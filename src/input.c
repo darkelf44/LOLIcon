@@ -9,14 +9,17 @@
 #define REPEAT_DELAY_AFTER 200000
 
 // Focus variables
+volatile SceUID shell_pid = 0;
+volatile SceUID focus_pid = 0;
+static KMutex focus_mutex = 0;
+
 char focus_name[FOCUS_NAME_MAX];
-SceUID focus_pid = 0;
 bool focus_is_shell = false;
 bool focus_is_pspemu = false;
 
 // Input variables
-static KMutex   mutex = 0;
-static uint32_t repeat = 0;
+static KMutex   input_mutex = 0;
+static uint32_t input_repeat = 0;
 static uint32_t prev_buttons = 0;
 static uint32_t prev_timestamp = 0;
 
@@ -27,19 +30,19 @@ void input_handle(int8_t port, SceCtrlData * ctrl)
 		return;
 
 	// Inputs are processed on one thread at a time
-	if (kmutex_try_lock(&mutex))
+	if (kmutex_try_lock(&input_mutex))
 	{
 		// Variables
 		uint32_t pressed = 0;
 		uint32_t down = 0;
 		uint32_t up = 0;
 		uint32_t held = ctrl->buttons;
-		
+
 		// Do not process old inputs
 		if (prev_timestamp - ctrl->timeStamp < TIMESTAMP_SHADOW)
 		{
 			// Release mutex and return
-			kmutex_unlock(&mutex);
+			kmutex_unlock(&input_mutex);
 			return;
 		}
 
@@ -53,14 +56,14 @@ void input_handle(int8_t port, SceCtrlData * ctrl)
 			// Buttons presses
 			pressed = down;
 			// Reset repeat time
-			repeat = ctrl->timeStamp + REPEAT_DELAY_FIRST;
+			input_repeat = ctrl->timeStamp + REPEAT_DELAY_FIRST;
 		}
-		else if (repeat < ctrl->timeStamp)
+		else if (input_repeat < ctrl->timeStamp)
 		{
 			// Button presses
 			pressed = ctrl->buttons;
 			// Reset repeat time
-			repeat = ctrl->timeStamp + REPEAT_DELAY_AFTER;
+			input_repeat = ctrl->timeStamp + REPEAT_DELAY_AFTER;
 		}
 
 		// Update previous buttons
@@ -75,7 +78,7 @@ void input_handle(int8_t port, SceCtrlData * ctrl)
 				menu_close();
 			else
 				menu_open();
-				
+
 			// Clear pressed button
 			pressed &= ~SCE_CTRL_UP;
 		}
@@ -87,9 +90,9 @@ void input_handle(int8_t port, SceCtrlData * ctrl)
 			if (menu.visible)
 				menu.page->input_func(pressed, up, down, held);
 		}
-		
+
 		// Release mutex
-		kmutex_unlock(&mutex);
+		kmutex_unlock(&input_mutex);
 	}
 }
 
@@ -98,7 +101,7 @@ void input_filter(int8_t port, SceCtrlData * ctrl)
 	// Remove captured button presses
 	if (menu.capture)
 		ctrl->buttons = 0;
-	
+
 	// Full button remapping
 	if (profile_config->enable_button_remap)
 	{
@@ -120,18 +123,39 @@ void input_filter(int8_t port, SceCtrlData * ctrl)
 	}
 }
 
-void focus_changed(SceUID pid)
+void focus_update(SceUID pid)
 {
-	// Get focused process name
-	focus_pid = pid;
-	if (ksceKernelGetProcessTitleId(pid, focus_name, FOCUS_NAME_MAX) == 0)
-	{
-		focus_is_shell = kstreq("main", focus_name);
-		focus_is_pspemu = kstreq("PSPEMUCFW", focus_name);
-	}
-	
-	// TODO: reload config
-	
-	// TODO: apply overclocks
-}
+	// No need to change focus
+	if (pid == focus_pid)
+		return;
+		
+	// Only change back to shell after focus is reset
+	if (focus_pid && pid == shell_pid)
+		return;
 
+	// Change focus
+	if (kmutex_try_lock(&focus_mutex))
+	{
+		// Variables
+		char title[FOCUS_NAME_MAX];
+
+		// Get process title
+		if (ksceKernelGetProcessTitleId(pid, title, FOCUS_NAME_MAX) == 0)
+		{
+			// Set shell pid on first render
+			if (kstreq("main", title))
+				shell_pid = pid;
+
+			// Actually change the focus
+			focus_pid = pid;
+			kstrcpy(focus_name, title, FOCUS_NAME_MAX);
+		}
+		
+		// Unlock mutex
+		kmutex_unlock(&focus_mutex);
+	}
+
+	// TODO: Load config
+
+	// Apply config
+}
