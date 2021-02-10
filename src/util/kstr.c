@@ -4,6 +4,23 @@
 // Local includes
 #include <util/kchar.h>
 
+size_t kstrlen(const char * str)
+{
+	size_t n = 0;
+	for (; str[n]; ++ n) {}
+	return n;
+}
+
+// Set the value of a string buffer
+void kstrcpy(char * dest, const char * src, size_t n)
+{
+	// Copy the string
+	for (; n > 1 && *src; (-- n, ++ dest, ++ src))
+		*dest = *src;
+	// Terminate string
+	*dest = 0;
+}
+
 // Compare with case
 int kstrcmp(const char * left, const char * right)
 {
@@ -20,16 +37,6 @@ int kstrcmpi(const char * left, const char * right)
 	for (; *left && *right && (klower(*left) == klower(*right)); (++ left, ++ right)) {}
 	// Return the ordering
 	return (int) (unsigned char) klower(*left) - (int) (unsigned char) klower(*left);
-}
-
-// Set the value of a string buffer
-void kstrcpy(char * dest, const char * src, size_t n)
-{
-	// Copy the string
-	for (; n > 1 && *src; (-- n, ++ dest, ++ src))
-		*dest = *src;
-	// Terminate string
-	*dest = 0;
 }
 
 // Convert signed integers to string

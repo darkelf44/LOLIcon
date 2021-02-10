@@ -212,13 +212,46 @@ Page menu_page_main = { NULL, 0, &menu_main_draw, (MenuInputFunction) &menu_main
 static void menu_global_settings_draw(void)
 {
 	menu_draw_title(ICON_LOLI "Menu" " / Global settings");
+	
+	menu_draw_entry_ln(0, "Text settings", 8);
+	display.text_y += 8;
+	menu_draw_entry_ln(1, "Save global settings", 12);
+	menu_draw_entry_ln(2, "Reset global settings", 12);
+	menu_draw_entry_ln(3, "Reload global settings", 12);
 }
 
 static void menu_global_settings_input(uint32_t pressed)
 {
+	// Contants
+	static const int count = 4;
+
+	// Navigate
+	if ((pressed & SCE_CTRL_UP) && menu.page->selected > 0)
+		-- menu.page->selected;
+	if ((pressed & SCE_CTRL_DOWN) && menu.page->selected < count -1)
+		++ menu.page->selected;
+
 	// Cancel
 	if (pressed & SCE_CTRL_CIRCLE)
 		menu.page = menu.page->previous;
+	// Accept
+	if (pressed & SCE_CTRL_CROSS)
+	{
+		switch (menu.page->selected)
+		{
+			case 1:
+				config_save_global();
+				break;
+
+			case 2:
+				config_reset_global();
+				break;
+
+			case 3:
+				config_load_global();
+				break;
+		}
+	}
 }
 
 Page menu_page_global_settings = { NULL, 0, &menu_global_settings_draw, (MenuInputFunction) &menu_global_settings_input };
