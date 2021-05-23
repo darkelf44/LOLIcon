@@ -19,9 +19,9 @@ bool focus_is_pspemu = false;
 
 // Input variables
 static KMutex   input_mutex = 0;
-static uint32_t input_repeat = 0;
 static uint32_t prev_buttons = 0;
-static uint32_t prev_timestamp = 0;
+static uint64_t prev_timestamp = 0;
+static uint64_t repeat_timestamp = 0;
 
 void input_handle(int8_t port, SceCtrlData * ctrl)
 {
@@ -59,14 +59,14 @@ void input_handle(int8_t port, SceCtrlData * ctrl)
 			// Buttons presses
 			pressed = down;
 			// Reset repeat time
-			input_repeat = ctrl->timeStamp + REPEAT_DELAY_FIRST;
+			repeat_timestamp = ctrl->timeStamp + REPEAT_DELAY_FIRST;
 		}
-		else if (input_repeat < ctrl->timeStamp)
+		else if (repeat_timestamp < ctrl->timeStamp)
 		{
 			// Button presses
 			pressed = ctrl->buttons;
 			// Reset repeat time
-			input_repeat = ctrl->timeStamp + REPEAT_DELAY_AFTER;
+			repeat_timestamp = ctrl->timeStamp + REPEAT_DELAY_AFTER;
 		}
 
 		// Update previous buttons
