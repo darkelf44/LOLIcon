@@ -268,7 +268,9 @@ static int hook_ProcEventForDriver_414CC813(int pid, int id, int r3, int r4, int
 
 	if (focus_pid && pid == focus_pid)
 	{
-		// TODO
+		// Detect application closing or exiting (probably)
+		if (id == 3 || id == 4)
+			focus_reset();
 	}
 
 	if (hooks[13].ref)

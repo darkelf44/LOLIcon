@@ -16,4 +16,5 @@ void input_handle(int8_t port, SceCtrlData * ctrl);
 void input_filter(int8_t port, SceCtrlData * ctrl);
 
 // Focus handlers
+void focus_reset();
 void focus_update(SceUID pid);

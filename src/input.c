@@ -28,6 +28,9 @@ void input_handle(int8_t port, SceCtrlData * ctrl)
 	// Only handle the first port (Handling port 1 doubles all events, because its a copy of port 0)
 	if (port != 0)
 		return;
+	// Only handle focused application
+	if (focus_pid && focus_pid != ksceKernelGetProcessId())
+		return;
 
 	// Inputs are processed on one thread at a time
 	if (kmutex_try_lock(&input_mutex))
@@ -121,6 +124,15 @@ void input_filter(int8_t port, SceCtrlData * ctrl)
 		if (profile_config->disable_button_L3_R3)
 			ctrl->buttons &= ~ (SCE_CTRL_L3 | SCE_CTRL_R3);
 	}
+}
+
+void focus_reset()
+{
+	// Remove focused app
+	focus_pid = 0;
+	// Focus on shell
+	if (shell_pid)
+		focus_update(shell_pid);
 }
 
 void focus_update(SceUID pid)

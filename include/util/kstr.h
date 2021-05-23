@@ -30,3 +30,11 @@ uint32_t kstr2uint(const char * text);
 // Conversions to string
 char * kint2str(char * buffer, int32_t value);
 char * kuint2str(char * buffer, uint32_t value);
+
+// Conversions from hex
+int32_t khex2int(const char * text);
+uint32_t khex2uint(const char * text);
+
+// Conversions to hex
+char * kint2hex(char * buffer, int32_t value);
+char * kuint2hex(char * buffer, uint32_t value);

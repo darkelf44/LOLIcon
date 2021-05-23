@@ -25,6 +25,7 @@ struct SProfileConfig
 	
 	// Bluetooth settings
 	uint8_t bluetooth_touch_mode;
+	uint8_t bluetooth_touch_click;
 	uint8_t bluetooth_motion_mode;
 
 	// Overclock settings

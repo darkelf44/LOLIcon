@@ -80,3 +80,35 @@ char * kuint2str(char * buffer, uint32_t value)
 	return buffer;
 }
 
+char * kint2hex(char * buffer, int32_t value)
+{
+	if (value < 0)
+	{
+		// Add sign and convert
+		*buffer = '-';
+		return (kuint2hex(buffer + 1, -value), buffer);
+	}
+	else
+	{
+		// Convert as unsigned
+		return kuint2hex(buffer, value);
+	}
+}
+
+char * kuint2hex(char * buffer, uint32_t value)
+{
+	// Contants
+	static const char * digits = "0123456789ABCDEF";
+	
+	// Variables
+	uint32_t limit;
+	size_t n;
+
+	// TODO: limit digits
+	for (n = 0; n < 8; ++ n)
+		buffer[7 - n] = digits[(value >> (n * 4)) & 0xF];
+	buffer[8] = 0;
+
+	// return buffer
+	return buffer;
+}

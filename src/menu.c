@@ -260,10 +260,35 @@ Page menu_page_global_settings = { NULL, 0, &menu_global_settings_draw, (MenuInp
 
 static void menu_control_settings_draw(void)
 {
+	// Constants
+	static const char * BLUETOOTH_TOUCH_MODE[] = {
+		/*0*/ "Disabled",
+		/*1*/ "Front",
+		/*2*/ "Back",
+	};
+	static const char * BLUETOOTH_TOUCH_CLICK[] = {
+		/*0*/ "Disabled",
+		/*1*/ "Touch",
+		/*2*/ "Toggle (F/B)",
+		/*3*/ "Toggle (D/F/B)",
+	};
+	static const char * BLUETOOTH_MOTION_MODE[] = {
+		/*0*/ "Disabled",
+		/*1*/ "Normal",
+	};
+	
 	menu_draw_title(ICON_LOLI "Menu" " / Control settings");
 	
 	menu_draw_entry(0, "Swap the " ICON_CROSS " and " ICON_CIRCLE " buttons", 20); menu_draw_entry_ln(0, to_toggle(profile_config->enable_button_swap), -20);
 	menu_draw_entry(1, "Disable the L3 and R3 buttons", 20); menu_draw_entry_ln(1, to_toggle(profile_config->disable_button_L3_R3), -20);
+	menu_draw_entry(-1, "Enable custom layout", 20); menu_draw_entry_ln(-1, to_toggle(profile_config->enable_button_remap), -20);
+	menu_draw_entry_ln(-1, "Edit custom layout", 20);
+	display.text_y += 8;
+	menu_draw_entry(-1, ICON_BT " Touchpad mode", 20); menu_draw_entry_ln(-1, BLUETOOTH_TOUCH_MODE[profile_config->bluetooth_touch_mode], -20);
+	menu_draw_entry(-1, ICON_BT " Touchpad click", 20); menu_draw_entry_ln(-1, BLUETOOTH_TOUCH_CLICK[profile_config->bluetooth_touch_click], -20);
+	menu_draw_entry(-1, ICON_BT " Motion controls", 20); menu_draw_entry_ln(-1, BLUETOOTH_MOTION_MODE[profile_config->bluetooth_motion_mode], -20);
+	display.text_y += 8;
+	menu_draw_entry(-1, "Exit and save changes", 11);
 
 }
 
