@@ -31,6 +31,9 @@
 // Array of file streams
 KFile file_array[KFOPEN_MAX] = {0};
 
+// Buffer for fprintf
+char format_buffer[KBUFFERSIZE];
+
 // Convert open mode string to stream flags
 int mode2flags(const char * mode)
 {
@@ -467,6 +470,45 @@ bool ksetbuf(KFile * file, char * buffer, int mode, size_t size)
 	return false;
 }
 
+bool kmkdirs(const char * filename, SceMode mode)
+{
+	// Variables
+	size_t i, n;
+	char * buffer;
+
+	// Get string size, allocate buffer
+	for (n = 0; filename[n]; ++ n) {}
+	buffer = kmalloc(n);
+	if (!buffer)
+		return false;
+
+	// Create parent directories
+	for (i = 0; i < n; ++ i)
+	{
+		// Directory separator, create directory
+		if ((filename[i] == '/') && (i > 0) && (filename[i - 1] != '/'))
+		{
+			buffer[i] = 0;
+			ksceIoMkdir(buffer, mode);
+		}
+
+		// Copy character
+		buffer[i] = filename[i];
+	}
+	// create last directory
+	if (filename[i - 1] != '/')
+	{
+		ksceIoMkdir(buffer, mode);
+	}
+
+	// Free buffer
+	kfree(buffer);
+
+	// Return the result
+	return false;
+}
+
+
 // Format type values
 #define FORMAT_TYPE_DEFAULT 0
 #define FORMAT_TYPE_HH 1
@@ -483,49 +525,72 @@ bool ksetbuf(KFile * file, char * buffer, int mode, size_t size)
 #define FORMAT_FLAG_LEFT  4
 #define FORMAT_FLAG_ALTER 8
 #define FORMAT_FLAG_ZERO  0x10
-#define FORMAT_FLAG_VARIABLE_WIDTH     0x20
-#define FORMAT_FLAG_VARIABLE_PRECISION 0x40
+#define FORMAT_FLAG_EXT_WIDTH     0x100
+#define FORMAT_FLAG_EXT_PRECISION 0x200
 
 size_t kfprintf(KFile * file, const char * format, ...)
 {
-	// FIXME: Not implemented
-	return 0;
+	// Variables
+	size_t result;
+
+	// Call implementation
+	va_list list;
+	va_start(list, format);
+	result = kfprintfv(file, format, list);
+	va_end(list);
+
+	// Return result
+	return result;
 }
 
 size_t ksprintf(char * buffer, size_t n, const char * format, ...)
 {
-	// FIXME: Not implemented
-	return 0;
+	// Variables
+	size_t result;
+
+	// Call implementation
+	va_list list;
+	va_start(list, format);
+	result = ksprintfv(buffer, n, format, list);
+	va_end(list);
+
+	// Return result
+	return result;
 }
 
 size_t kfprintfv(KFile * file, const char * format, va_list list)
 {
-	// FIXME: Not implemented
-	return 0;
+	// Format string
+	size_t result = ksprintfv(format_buffer, sizeof(format_buffer), format, list);
+	// write to file
+	kfputs(file, format_buffer);
+	// return the result
+	return result;
 }
 
-/*
 size_t ksprintfv(char * buffer, size_t n, const char * format, va_list list)
 {
 	// Variables
-	char * end = buffer + (n - 1);
+	size_t i = 0;
+	size_t size = (n > 0) ? (n - 1) : 0;
+	char * next = buffer;
 
 	// Process format string
-	for (; *format && buffer < end; ++ format)
+	for (; *format; ++ format)
 	{
 		if (*format == '%')
 		{
 			// Variables
-			uint8_t type = 0;
-			uint8_t flags = 0;
-			size_t width = 0;
-			size_t precision = -1;
+			uint16_t type = 0;
+			uint16_t flags = 0;
+			int width = 0;
+			int precision = -1;
 
 			// Next character
 			++ format;
 
 			// Process format flags
-			while (*format == ' ' || *format == '+' || *format == '-' ||*format == '#' ||*format == '0');
+			while (*format == ' ' || *format == '+' || *format == '-' ||*format == '#' ||*format == '0')
 			{
 				switch (*format)
 				{
@@ -547,11 +612,15 @@ size_t ksprintfv(char * buffer, size_t n, const char * format, va_list list)
 				}
 				++ format;
 			}
+			if (flags & FORMAT_FLAG_LEFT)
+				flags &= ~ FORMAT_FLAG_ZERO;
+			if (flags & FORMAT_FLAG_SIGN)
+				flags &= ~ FORMAT_FLAG_BLANK;
 
 			// Process format width
 			if (*format == '*')
 			{
-				flags |= FORMAT_FLAG_VARIABLE_WIDTH;
+				flags |= FORMAT_FLAG_EXT_WIDTH;
 				++ format;
 			}
 			else if (*format >= '1' && *format <= '9')
@@ -567,13 +636,14 @@ size_t ksprintfv(char * buffer, size_t n, const char * format, va_list list)
 				++ format;
 				if (*format == '*')
 				{
-					flags |= FORMAT_FLAG_VARIABLE_PRECISION;
+					flags |= FORMAT_FLAG_EXT_PRECISION;
 					++ format;
 				}
 				else
 				{
 					precision = 0;
 					for (; *format >= '0' && *format <= '9'; ++ format)
+						precision = precision * 10 + *format - '0';
 				}
 			}
 
@@ -636,67 +706,435 @@ size_t ksprintfv(char * buffer, size_t n, const char * format, va_list list)
 			{
 				// Single '%'
 				case '%':
-					*buffer = '%';
+					if (i ++ < size)
+						*next ++ = '%';
 					break;
 
 				// Get the number of characters written
 				case 'n':
+					switch (type)
+					{
+						case FORMAT_TYPE_HH:
+							* va_arg(list, unsigned char *) = next - buffer;
+							break;
+						case FORMAT_TYPE_H:
+							* va_arg(list, unsigned short *) = next - buffer;
+							break;
+						case FORMAT_TYPE_L:
+							* va_arg(list, unsigned long *) = next - buffer;
+							break;
+						case FORMAT_TYPE_LL:
+							* va_arg(list, unsigned long long *) = next - buffer;
+							break;
+						case FORMAT_TYPE_J:
+							* va_arg(list, uintmax_t *) = next - buffer;
+							break;
+						case FORMAT_TYPE_Z:
+							* va_arg(list, size_t *) = next - buffer;
+							break;
+						case FORMAT_TYPE_T:
+							* va_arg(list, ptrdiff_t *) = next - buffer;
+							break;
+						default:
+							* va_arg(list, unsigned int *) = next - buffer;
+							break;
+					}
 					break;
 
 				// Character
+				case 'C':
+					type = FORMAT_TYPE_L;
 				case 'c':
+					// Wide characters are not supported
+					{
+						// Variables
+						char ch;
+
+						// Read parameters in order
+						if (flags & FORMAT_FLAG_EXT_WIDTH)
+							width = va_arg(list, int);
+						if (flags & FORMAT_FLAG_EXT_PRECISION)
+							precision = va_arg(list, int);
+
+						// Read value
+						ch = (char) va_arg(list, int);
+
+						// Negative widths are aligned left
+						if (width < 0)
+						{
+							width = -width;
+							flags |= FORMAT_FLAG_LEFT;
+						}
+
+						// update width
+						if (width > 0)
+							-- width;
+
+						// Padding before
+						if (width && !(flags & FORMAT_FLAG_LEFT))
+							for (; width > 0; -- width)
+								if (i ++ < size)
+									*next ++ = ' ';
+
+						// Write character
+						if (i ++ < size)
+							*next ++ = ch;
+
+						// Padding after
+						for (; width > 0; -- width)
+							if (i ++ < size)
+								*next ++ = ' ';
+					}
 					break;
 
 				// String
+				case 'S':
+					type = FORMAT_TYPE_L;
 				case 's':
+					// Wide strings are not supported
+					{
+						// Variables
+						const char * str;
+
+						// Read parameters in order
+						if (flags & FORMAT_FLAG_EXT_WIDTH)
+							width = va_arg(list, int);
+						if (flags & FORMAT_FLAG_EXT_PRECISION)
+							precision = va_arg(list, int);
+						str = va_arg(list, char *);
+
+						// Negative widths are aligned left
+						if (width < 0)
+						{
+							width = -width;
+							flags |= FORMAT_FLAG_LEFT;
+						}
+
+						// Find length and padding
+						if (precision < 0)
+							for (precision = 0; str[precision]; ++ precision) {}
+						width = (precision < width) ? width - precision : 0;
+
+						// Padding before
+						if (width && !(flags & FORMAT_FLAG_LEFT))
+							for (; width > 0; -- width)
+								if (i ++ < size)
+									*next ++ = ' ';
+
+						// Copy string
+						for (; precision > 0; -- precision)
+							if (i ++ < size)
+								*next ++ = *str ++;
+
+						// Padding after
+						for (; width > 0; -- width)
+							if (i ++ < size)
+								*next ++ = ' ';
+					}
 					break;
 
 				// Signed decimal
 				case 'd':
 				case 'i':
-					break;
-
 				// Unsigned decimal
 				case 'u':
+					{
+						// Variables
+						size_t n;
+						uintmax_t value;
+						char sign = 0;
+						char buffer[3 * sizeof(uintmax_t) + 1];
+
+						// Read parameters in order
+						if (flags & FORMAT_FLAG_EXT_WIDTH)
+							width = va_arg(list, int);
+						if (flags & FORMAT_FLAG_EXT_PRECISION)
+							precision = va_arg(list, int);
+
+						// Negative widths are aligned left
+						if (width < 0)
+						{
+							width = -width;
+							flags |= FORMAT_FLAG_LEFT;
+						}
+
+						// Read value
+						switch (type)
+						{
+							case FORMAT_TYPE_HH:
+								if (*format == 'u')
+									value = (unsigned char) va_arg(list, int);
+								else
+									value = (signed char) va_arg(list, int);
+								break;
+							case FORMAT_TYPE_H:
+								if (*format == 'u')
+									value = (unsigned short) va_arg(list, int);
+								else
+									value = (short) va_arg(list, int);
+								break;
+							case FORMAT_TYPE_L:
+								if (*format == 'u')
+									value = va_arg(list, unsigned long);
+								else
+									value = va_arg(list, long);
+								break;
+							case FORMAT_TYPE_LL:
+								if (*format == 'u')
+									value = va_arg(list, unsigned long long);
+								else
+									value = va_arg(list, long long);
+								break;
+							case FORMAT_TYPE_J:
+								if (*format == 'u')
+									value = va_arg(list, uintmax_t);
+								else
+									value = va_arg(list, uintmax_t);
+								break;
+							case FORMAT_TYPE_Z:
+								if (*format == 'u')
+									value = va_arg(list, size_t);
+								else
+									value = (intptr_t) va_arg(list, size_t);	// Assuming sizeof(size_t) == sizeof(void *)
+								break;
+							case FORMAT_TYPE_T:
+								if (*format == 'u')
+									value = (uintptr_t) va_arg(list, ptrdiff_t);	// Assuming sizeof(ptrdiff_t) == sizeof(void *)
+								else
+									value = va_arg(list, ptrdiff_t);
+								break;
+							default:
+								if (*format == 'u')
+									value = va_arg(list, unsigned int);
+								else
+									value = va_arg(list, int);
+						}
+
+						// Calculate sign
+						if ((*format == 'u') || (0 < (intmax_t) value))
+						{
+							if (flags & FORMAT_FLAG_BLANK)
+								sign = ' ';
+							if (flags & FORMAT_FLAG_SIGN)
+								sign = '+';
+						}
+						else
+						{
+							sign = '-';
+							value = - (intmax_t) value;
+						}
+
+						// Convert number
+						for (n = 0; value; value /= 10)
+							buffer[n ++] = '0' + value % 10;
+
+						// Calculate padding
+						width = (n < width) ? (width - n) : 0;
+						if (width && sign)
+							width -= 1;
+
+						// Padding before
+						if (width && !(flags & (FORMAT_FLAG_LEFT | FORMAT_FLAG_ZERO)))
+							for (; width > 0; -- width)
+								if (i ++ < size)
+									*next ++ = ' ';
+
+						// Add Sign
+						if (sign && (i ++ < size))
+							*next ++ = sign;
+
+						// Numeric padding
+						if (width && (flags & FORMAT_FLAG_ZERO))
+							for (; width > 0; -- width)
+								if (i ++ < size)
+									*next ++ = '0';
+
+						// Minimum digits
+						if (n == 0 && (i ++ < size))
+							*next ++ = '0';
+
+						// Copy digits in reverse
+						while (n -- > 0)
+							if (i ++ < size)
+								*next ++ = buffer[n];
+
+						// Padding after
+						for (; width > 0; -- width)
+							if (i ++ < size)
+								*next ++ = ' ';
+					}
 					break;
+
 
 				// Octal
 				case 'o':
-					break;
-
 				// Hexadecimal
 				case 'x':
 				case 'X':
+					{
+						// Variables
+						size_t n;
+						uintmax_t value;
+						char sign = 0;
+						char buffer[3 * sizeof(uintmax_t) + 1];
+
+						// Read parameters in order
+						if (flags & FORMAT_FLAG_EXT_WIDTH)
+							width = va_arg(list, int);
+						if (flags & FORMAT_FLAG_EXT_PRECISION)
+							precision = va_arg(list, int);
+
+						// Negative widths are aligned left
+						if (width < 0)
+						{
+							width = -width;
+							flags |= FORMAT_FLAG_LEFT;
+						}
+
+						// Read value
+						switch (type)
+						{
+							case FORMAT_TYPE_HH:
+								value = (unsigned char) va_arg(list, int);
+								break;
+							case FORMAT_TYPE_H:
+								value = (unsigned short) va_arg(list, int);
+								break;
+							case FORMAT_TYPE_L:
+								value = va_arg(list, unsigned long);
+								break;
+							case FORMAT_TYPE_LL:
+								value = va_arg(list, unsigned long long);
+								break;
+							case FORMAT_TYPE_J:
+								value = va_arg(list, uintmax_t);
+								break;
+							case FORMAT_TYPE_Z:
+								value = va_arg(list, size_t);
+								break;
+							case FORMAT_TYPE_T:
+								value = (uintptr_t) va_arg(list, ptrdiff_t);
+								break;
+							default:
+								value = va_arg(list, unsigned int);
+						}
+
+						// Calculate sign
+						if (flags & FORMAT_FLAG_BLANK)
+							sign = ' ';
+						if (flags & FORMAT_FLAG_SIGN)
+							sign = '+';
+
+						// Convert value
+						if (*format == 'o')
+						{
+							for (n = 0; value; value >>= 3)
+								buffer[n ++] = '0' + (value & 7);
+						}
+						else
+						{
+							const char * digits = (*format == 'x') ? "0123456789abcdef" : "0123456789ABCDEF";
+							for (n = 0; value; value >>= 4)
+								buffer[n ++] = digits[value & 0xF];
+						}
+
+						// Calculate padding
+						width = (n < width) ? (width - n) : 0;
+
+						// Padding before
+						if (width && !(flags & (FORMAT_FLAG_LEFT | FORMAT_FLAG_ZERO)))
+							for (; width > 0; -- width)
+								if (i ++ < size)
+									*next ++ = ' ';
+
+						// Add Sign
+						if (sign && (i ++ < size))
+							*next ++ = sign;
+
+						// Numeric padding
+						if (width && (flags & FORMAT_FLAG_ZERO))
+							for (; width > 0; -- width)
+								if (i ++ < size)
+									*next ++ = '0';
+
+						// Minimum digits
+						if (n == 0 && (i ++ < size))
+							*next ++ = '0';
+
+						// Copy digits in reverse
+						while (n -- > 0)
+							if (i ++ < size)
+								*next ++ = buffer[n];
+
+						// Padding after
+						for (; width > 0; -- width)
+							if (i ++ < size)
+								*next ++ = ' ';
+					}
 					break;
 
-				// Floating point (exponent)
-				case 'e':
-				case 'E':
-					break;
-
-				// Floating point (normal)
-				case 'f':
-				case 'F':
-					break;
-
-				// Hexadecimal (shortest)
-				case 'g':
-				case 'G':
-					break;
-
-				// Pointer
+				// Address (hexadecimal)
 				case 'p':
+					{
+						// Variables
+						size_t n = 2 * sizeof(void *);
+						uintptr_t value;
+
+						// Read parameters in order
+						if (flags & FORMAT_FLAG_EXT_WIDTH)
+							width = va_arg(list, int);
+						if (flags & FORMAT_FLAG_EXT_PRECISION)
+							precision = va_arg(list, int);
+
+						// Negative widths are aligned left
+						if (width < 0)
+						{
+							width = -width;
+							flags |= FORMAT_FLAG_LEFT;
+						}
+
+						// Read value
+						value = (uintptr_t) va_arg(list, void *);
+
+						// Calculate padding
+						width = (n < width) ? (width - n) : 0;
+
+						// Padding before
+						if (width && !(flags & FORMAT_FLAG_LEFT))
+							for (; width > 0; -- width)
+								if (i ++ < size)
+									*next ++ = ' ';
+
+						// Print value
+						while (n -- > 0)
+							if (i ++ < size)
+								*next ++ = "0123456789ABCDEF"[(value >> (n * 4)) & 0xF];
+
+						// Padding after
+						for (; width > 0; -- width)
+							if (i ++ < size)
+								*next ++ = ' ';
+					}
 					break;
 
 				// Invalid type
 				default:
-					*buffer = *format;
+					if (i ++ < size)
+						*next ++ = *format;
 			}
 		}
 		else
-			*buffer = *format;
+		{
+			// Copy character
+			if (i ++ < size)
+				*next ++ = *format;
+		}
 	}
 
-	return 0;
+	// Terminate string
+	if (n > 0)
+		*next = 0;
+
+	// Return the size of the string
+	return i;
 }
-*/

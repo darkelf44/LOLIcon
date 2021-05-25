@@ -79,8 +79,11 @@ bool kfseek(KFile * file, SceOff offset, int mode);
 // Stream buffer functions
 bool ksetbuf(KFile * file, char * buffer, int mode, size_t size);
 
-// Print functions
+// Print functions (kfprintf uses a static buffer, and output gets truncated to KBUFFERSIZE)
 size_t kfprintf(KFile * file, const char * format, ...);
 size_t ksprintf(char * buffer, size_t n, const char * format, ...);
 size_t kfprintfv(KFile * file, const char * format, va_list list);
 size_t ksprintfv(char * buffer, size_t n, const char * format, va_list list);
+
+// Filesystem functions
+bool kmkdirs(const char * filename, SceMode mode);
