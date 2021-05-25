@@ -20,10 +20,10 @@ void logv(Severity level, const char * msg, va_list list)
 	size_t n;
 	
 	// Compose message
-	snprintf(buffer, sizeof(buffer), "[*%08x] ", (uint32_t) ksceKernelGetProcessId());
-	n = strlen(buffer);
-	vsnprintf(buffer + n, sizeof(buffer) - n, msg, list);
-	n = strlen(buffer + n) + n;
+	ksprintf(buffer, sizeof(buffer), "[*%08x] ", (uint32_t) ksceKernelGetProcessId());
+	n = kstrlen(buffer);
+	ksprintfv(buffer + n, sizeof(buffer) - n, msg, list);
+	n = kstrlen(buffer + n) + n;
 	buffer[n ++] = '\n';
 	
 	// Write to log file

@@ -17,7 +17,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fno-rtti -fno-exceptions")
 
 include_directories(
 	${CMAKE_SOURCE_DIR}/include
-	${CMAKE_SOURCE_DIR}/include/override
 )
 
 link_directories(
@@ -40,7 +39,6 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-		k
 		SceAppMgrForDriver_stub
 		SceSysmemForDriver_stub
 		SceProcessmgrForKernel_stub

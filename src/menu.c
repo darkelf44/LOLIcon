@@ -46,7 +46,7 @@ void menu_close(void)
 static void menu_draw_title(const char * title)
 {
 	// Variables
-	size_t n = strlen(title);
+	size_t n = kstrlen(title);
 	uint16_t dx = display.font->char_width;
 	uint16_t dy = display.font->char_height;
 
@@ -65,7 +65,7 @@ static void menu_draw_title(const char * title)
 static void menu_draw_entry(int16_t index, const char * text, int16_t align)
 {
 	// Variables
-	size_t n = strlen(text);
+	size_t n = kstrlen(text);
 	uint16_t dx = display.font->char_width;
 	uint32_t fgcolor, bgcolor;
 
@@ -205,7 +205,7 @@ void menu_main_input(uint32_t pressed)
 	}
 }
 
-Page menu_page_main = { NULL, 0, &menu_main_draw, (MenuInputFunction) &menu_main_input };
+Page menu_page_main = { 0, NULL, &menu_main_draw, (MenuInputFunction) &menu_main_input };
 
 // Global Settings page
 
@@ -254,7 +254,7 @@ static void menu_global_settings_input(uint32_t pressed)
 	}
 }
 
-Page menu_page_global_settings = { NULL, 0, &menu_global_settings_draw, (MenuInputFunction) &menu_global_settings_input };
+Page menu_page_global_settings = { 0, NULL, &menu_global_settings_draw, (MenuInputFunction) &menu_global_settings_input };
 
 // Control Settings page
 
@@ -321,7 +321,7 @@ static void menu_control_settings_input(uint32_t pressed)
 	}
 }
 
-Page menu_page_control_settings = { NULL, 0, &menu_control_settings_draw, (MenuInputFunction) &menu_control_settings_input };
+Page menu_page_control_settings = { 0, NULL, &menu_control_settings_draw, (MenuInputFunction) &menu_control_settings_input };
 
 // Overclock Settings page
 
@@ -337,7 +337,7 @@ static void menu_overclock_settings_input(uint32_t pressed)
 		menu.page = menu.page->previous;
 }
 
-Page menu_page_overclock_settings = { NULL, 0, &menu_overclock_settings_draw, (MenuInputFunction) &menu_overclock_settings_input };
+Page menu_page_overclock_settings = { 0, NULL, &menu_overclock_settings_draw, (MenuInputFunction) &menu_overclock_settings_input };
 
 // Tools & Information page
 
@@ -371,10 +371,10 @@ static void menu_information_and_tools_input(uint32_t pressed)
 		enable_logging = false;
 }
 
-Page menu_page_information_and_tools = { NULL, 0, &menu_information_and_tools_draw, (MenuInputFunction) &menu_information_and_tools_input };
+Page menu_page_information_and_tools = { 0, NULL, &menu_information_and_tools_draw, (MenuInputFunction) &menu_information_and_tools_input };
 
 // Confirm Dialog
 
-Page menu_page_confirm = { NULL };
-Page menu_page_edit_color = { NULL };
+Page menu_page_confirm = { 0, NULL };
+Page menu_page_edit_color = { 0, NULL };
 

@@ -1,9 +1,10 @@
 #include <common.h>
 
-// Paths
-#define PREFIX "ur0:data/lolimenu/"
-#define PATH_GLOBAL_CONFIG PREFIX "global.cfg"
-#define PATH_PROFILE_CONFIG PREFIX "profile/%s.cfg"
+// Paths FIXME: Use these instead of the burnt in values
+#define GLOBAL_CONFIG_DIR   "ur0:data/lolimenu"
+#define GLOBAL_CONFIG_FILE  "ur0:data/lolimenu/global.cfg"
+#define PROFILE_CONFIG_DIR  "ur0:data/lolimenu/profile"
+#define PROFILE_CONFIG_FILE "ur0:data/lolimenu/profile/%s.cfg"
 
 // Globals
 GlobalConfig global_config = {0};
@@ -13,6 +14,7 @@ ProfileConfig * profile_config = NULL;
 
 // Static globals
 static KMutex config_mutex = 0;
+static char   config_string_buffer[0x100];
 
 // String conversions
 static uint32_t str_to_color(const char * text, uint32_t def);
@@ -26,9 +28,9 @@ typedef bool (* ini_callback) (int type, const char * key, const char * value);
 #define INI_TYPE_GROUP 1
 
 // INI functions
-bool ini_read_file(const char * filename, ini_callback func);
-bool ini_global_config_callback(int type, const char * key, const char * value);
-bool ini_profile_config_callback(int type, const char * key, const char * value);
+static bool ini_read_file(const char * filename, ini_callback func);
+static bool ini_global_config_callback(int type, const char * key, const char * value);
+static bool ini_profile_config_callback(int type, const char * key, const char * value);
 
 // Initialize configuration
 void config_init(void)
@@ -70,8 +72,9 @@ void config_reset_profile(ProfileConfig * config)
 	config->disable_button_L3_R3 = false;
 
 	// Reset bluetooth controls
-	config->bluetooth_touch_mode = false;
-	config->bluetooth_motion_mode = false;
+	config->bluetooth_touch_mode = 0;
+	config->bluetooth_touch_click = 0;
+	config->bluetooth_motion_mode = 0;
 
 	// Reset overclock
 	config->enable_overclock = false;
@@ -95,29 +98,22 @@ bool config_save_global()
 	if (!kmutex_try_lock(&config_mutex))
 		return false;
 	
-	// Create directories
-	ksceIoMkdir("ur0:data", 0666);
-	ksceIoMkdir("ur0:data/lolimenu", 0666);
+	// Create directory
+	kmkdirs(GLOBAL_CONFIG_DIR, 0666);
 
 	// Open file
-	file = kfopen(PATH_GLOBAL_CONFIG, "wb");
+	file = kfopen(GLOBAL_CONFIG_FILE, "wb");
 	if (file)
 	{
 		// Text section
-		kfputs(file, "[text]");
-		kfputs(file, "\nmenu_color = ");
-		kfputs(file, color_to_str(global_config.menu_color));
-		kfputs(file, "\nmenu_background = ");
-		kfputs(file, color_to_str(global_config.menu_background));
-		kfputs(file, "\ndisabled_color = ");
-		kfputs(file, color_to_str(global_config.disabled_color));
-		kfputs(file, "\ndisabled_background = ");
-		kfputs(file, color_to_str(global_config.disabled_background));
-		kfputs(file, "\nselected_color = ");
-		kfputs(file, color_to_str(global_config.selected_color));
-		kfputs(file, "\nselected_background = ");
-		kfputs(file, color_to_str(global_config.selected_background));
-		kfputs(file, "\n\n");
+		kfputs(file, "[text]\n");
+		kfprintf(file, "menu_color = %s\n", color_to_str(global_config.menu_color));
+		kfprintf(file, "menu_background = %s\n", color_to_str(global_config.menu_background));
+		kfprintf(file, "disabled_color = %s\n", color_to_str(global_config.disabled_color));
+		kfprintf(file, "disabled_background = %s\n", color_to_str(global_config.disabled_background));
+		kfprintf(file, "selected_color = %s\n", color_to_str(global_config.selected_color));
+		kfprintf(file, "selected_background = %s\n", color_to_str(global_config.selected_background));
+		kfputs(file, "\n");
 
 		// Close file
 		kfclose(file);
@@ -125,7 +121,7 @@ bool config_save_global()
 
 	// Release mutex and return
 	kmutex_unlock(&config_mutex);
-	return true;
+	return !! file;
 }
 
 // Load profile configuration
@@ -145,11 +141,9 @@ bool config_save_profile(ProfileConfig * config, const char * profile)
 	if (!kmutex_try_lock(&config_mutex))
 		return false;
 
-	// Create directories
-	ksceIoMkdir("ur0:data", 0666);
-	ksceIoMkdir("ur0:data/lolimenu", 0666);
-	ksceIoMkdir("ur0:data/lolimenu/profile", 0666);
-
+	// Create directory
+	kmkdirs(PROFILE_CONFIG_DIR, 0666);
+	
 	// Open file
 	file = NULL; // kfopen(PATH_GLOBAL_CONFIG, "wb");
 	if (!file)
@@ -160,6 +154,24 @@ bool config_save_profile(ProfileConfig * config, const char * profile)
 
 	// Release mutex and return
 	kmutex_unlock(&config_mutex);
+	return false;
+}
+
+// Reads an INI file, calling the callback function on each group and key-value pair
+bool ini_read_file(const char * filename, ini_callback func)
+{
+	return false;
+}
+
+// Callback function for reading the global configuration
+bool ini_global_config_callback(int type, const char * key, const char * value)
+{
+	return false;
+}
+
+// Callback function for reading profile configurations
+bool ini_profile_config_callback(int type, const char * key, const char * value)
+{
 	return false;
 }
 

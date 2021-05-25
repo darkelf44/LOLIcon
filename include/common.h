@@ -10,9 +10,6 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 // Utility headers
 #include "util/kio.h"
